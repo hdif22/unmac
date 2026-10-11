@@ -23,7 +23,7 @@ env:
   APP_NAME: "CHANGE_ME App name"
   BUNDLE_ID: "com.CHANGE.ME"
   DEVELOPER: "CHANGE_ME Your name"
-  ICON_URL: "https://raw.githubusercontent.com/CHANGE_ME/CHANGE_ME/main/icon.png"
+  ICON_URL: ""   # empty = the app's own 1024px iOS icon from this repo
 
 jobs:
   ios:
@@ -67,7 +67,7 @@ jobs:
                   "bundleIdentifier": os.environ["BUNDLE_ID"],
                   "developerName": os.environ["DEVELOPER"],
                   "localizedDescription": os.environ["APP_NAME"],
-                  "iconURL": os.environ["ICON_URL"],
+                  "iconURL": os.environ["ICON_URL"] or f"https://raw.githubusercontent.com/{repo}/HEAD/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
                   "versions": [{
                       "version": tag.lstrip("v"),
                       "buildVersion": os.environ["GITHUB_RUN_NUMBER"],

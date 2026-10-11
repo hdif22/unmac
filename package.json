@@ -1,0 +1,9 @@
+{
+  "name": "unmac",
+  "version": "0.1.0",
+  "description": "Build iPhone apps without a Mac: one command, free cloud Mac, real .ipa.",
+  "type": "module",
+  "bin": { "unmac": "setup.mjs" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

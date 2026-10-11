@@ -1,6 +1,20 @@
 # unmac
 
-Ship iOS apps without a Mac. Build an iPhone app from Windows or Linux on a cloud Mac you do not own or pay for. Make a release for free, or publish to the App Store with Apple's $99 account.
+Build iPhone apps without a Mac. No Mac, no iPhone, $0. A free cloud Mac builds a real `.ipa` in about 5 minutes.
+
+## Quick start (Flutter, free)
+
+Your Flutter app must be in a **public** GitHub repo. Then, in the app folder:
+
+```
+npx github:hdif22/unmac
+```
+
+Press Enter at every question. It fixes the iOS settings, pushes and starts the build. About 5 minutes later your repo's Releases page has:
+- `app.ipa`: the iPhone app. Install it with Sideloadly, AltStore or SideStore and a free Apple ID (renew every 7 days).
+- `app-simulator.zip`: open it at appetize.io to use the app in your browser, with no iPhone.
+
+Needs Node.js and Git. That's it.
 
 ## Pick your stack
 
@@ -17,8 +31,8 @@ Check current limits before you rely on them: codemagic.io/pricing and expo.dev/
 
 No Apple Developer account, no Mac, no iPhone. GitHub's free macOS runners build it.
 
-1. In your app folder run `node path/to/unmac/setup.mjs` (needs Node.js). Pick `flutter`, then `free`. It fixes the iOS settings and writes `.github/workflows/free-release.yml` with your app name, bundle ID, name and icon filled in. Push the app to a **public** GitHub repo (free macOS builds).
-2. `git tag v1.0.0 && git push --tags`. The GitHub Release gets three files:
+1. In your app folder run `npx github:hdif22/unmac`. It detects Flutter and reuses your Android app ID as the iOS bundle ID. It fixes the iOS settings and writes `.github/workflows/free-release.yml`.
+2. Say yes to "push and start the build" (or later: `git tag v1.0.0 && git push origin v1.0.0`). The GitHub Release gets three files:
    - `app.ipa`: unsigned release build.
    - `app-simulator.zip`: debug build for the iOS Simulator.
    - `source.json`: an AltStore / SideStore source.
@@ -47,7 +61,7 @@ Apple may ask you to verify your identity in the Apple Developer app on an Apple
 
 ## Flutter
 
-1. In your app folder run `node path/to/unmac/setup.mjs` (needs Node.js) and pick `flutter`. It sets the bundle ID, raises the iOS minimum to 16, adds permission texts for common plugins and writes `codemagic.yaml`. Edit the texts to say why your app needs each permission.
+1. In your app folder run `npx github:hdif22/unmac` (needs Node.js) and pick `flutter`. It sets the bundle ID, raises the iOS minimum to 16, adds permission texts for common plugins and writes `codemagic.yaml`. Edit the texts to say why your app needs each permission.
 2. Connect your repo at codemagic.io. Teams > Integrations > App Store Connect > add the key. Remember its name.
 3. Fill the remaining `CHANGE` values in `codemagic.yaml` (integration name, Apple ID).
 4. `git tag ios-1.0.0 && git push --tags`. Allow 15-25 minutes. The build lands in TestFlight.
@@ -56,14 +70,14 @@ Apple may ask you to verify your identity in the Apple Developer app on an Apple
 
 Works for Expo projects. A bare React Native app with custom native code is harder and is not covered.
 
-1. In your app folder run `node path/to/unmac/setup.mjs` and pick `expo`. It sets the bundle ID and permission texts in `app.json` and adds `eas.json`. If you use `app.config.js`, merge `expo/app.json.snippet` by hand.
+1. In your app folder run `npx github:hdif22/unmac` and pick `expo`. It sets the bundle ID and permission texts in `app.json` and adds `eas.json`. If you use `app.config.js`, merge `expo/app.json.snippet` by hand.
 2. Put your numeric Apple ID into `eas.json` (`ascAppId`) and run `npx eas-cli login`.
 3. `npx eas-cli build -p ios --profile production`. EAS asks for your Apple login once and creates the signing for you.
 4. `npx eas-cli submit -p ios --profile production` uploads it to App Store Connect / TestFlight.
 
 ## Swift (native)
 
-1. In the folder with your Xcode project run `node path/to/unmac/setup.mjs` and pick `swift`. It finds your project or workspace and writes `codemagic.yaml`. Check the scheme name it guessed.
+1. In the folder with your Xcode project run `npx github:hdif22/unmac` and pick `swift`. It finds your project or workspace and writes `codemagic.yaml`. Check the scheme name it guessed.
 2. Set the bundle ID in Xcode (target > Signing & Capabilities). Connect your repo at codemagic.io and add the API key as in Flutter step 2.
 3. Fill the remaining `CHANGE` values, then push a tag like `ios-1.0.0`.
 

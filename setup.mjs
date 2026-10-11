@@ -21,10 +21,18 @@ const exists = (p) => fs.existsSync(p);
 
 const git = (c) => { try { return execSync(`git ${c}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return ''; } };
 
-const stack = (await ask('Stack (flutter / expo / swift): ', arg('stack'))).toLowerCase();
+// Guess everything we can, so most answers are just Enter.
+const guessStack = exists('pubspec.yaml') ? 'flutter'
+  : exists('package.json') && /"expo"\s*:/.test(read('package.json')) ? 'expo'
+  : fs.readdirSync('.').some((f) => /\.(xcodeproj|xcworkspace)$/.test(f)) ? 'swift' : '';
+const stack = ((await ask(`Stack (flutter / expo / swift) [${guessStack}]: `, arg('stack'))) || guessStack).toLowerCase();
 if (!['flutter', 'expo', 'swift'].includes(stack)) bail('Stack must be flutter, expo or swift.');
-const id = await ask('Bundle ID, like com.yourname.app: ', arg('bundle-id'));
-if (!/^[A-Za-z][\w-]*(\.[A-Za-z][\w-]*)+$/.test(id)) bail('Bundle ID must look like com.yourname.app');
+// Reuse the Android app ID when there is one, so both stores use the same ID.
+const gradle = ['android/app/build.gradle.kts', 'android/app/build.gradle'].find(exists);
+// Apple allows only letters, digits, "-" and "." (Android also allows "_").
+const guessId = ((gradle && (read(gradle).match(/applicationId\s*=?\s*["']([\w.]+)["']/) ?? [])[1]) || '').replaceAll('_', '-');
+const id = (await ask(`Bundle ID, like com.yourname.app [${guessId}]: `, arg('bundle-id'))) || guessId;
+if (!/^[A-Za-z][A-Za-z0-9-]*(\.[A-Za-z][A-Za-z0-9-]*)+$/.test(id)) bail('Bundle ID must look like com.yourname.app (letters, digits, "-" and "." only).');
 // Flutter only: free release on GitHub (no $99) or App Store / TestFlight via Codemagic ($99).
 const route = stack !== 'flutter' ? 'store'
   : ((await ask('Release: free (GitHub, no $99) or store (App Store, $99) [free]: ', arg('route'))) || 'free').toLowerCase();
@@ -36,6 +44,7 @@ if (route === 'free') {
   const me = git('config user.name');
   dev = (await ask(`Your name [${me}]: `, arg('developer'))) || me;
 }
+const push = route === 'free' && !/^n/i.test(await ask('Commit, push to GitHub and start the build now? [Y/n]: ', arg('push')));
 rl.close();
 
 const PERMS = {
@@ -77,13 +86,9 @@ if (stack === 'flutter') {
 function freeRelease() {
   const out = '.github/workflows/free-release.yml';
   if (exists(out)) return console.log(`kept your existing ${out}`);
-  // owner/repo from the GitHub remote, for the icon link
-  const repo = (git('remote get-url origin').match(/github\.com[:/](.+?)(\.git)?$/) ?? [])[1];
-  const icon = 'ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png';
-  const iconUrl = repo && exists(icon) ? `https://raw.githubusercontent.com/${repo}/HEAD/${icon}` : '';
   const fill = (k, v) => (y) => (v ? y.replace(new RegExp(`(${k}: )".*"`), `$1${JSON.stringify(v)}`) : y);
   let y = read(path.join(here, 'flutter/free-release.yml'));
-  for (const f of [fill('APP_NAME', appName), fill('BUNDLE_ID', id), fill('DEVELOPER', dev), fill('ICON_URL', iconUrl)]) y = f(y);
+  for (const f of [fill('APP_NAME', appName), fill('BUNDLE_ID', id), fill('DEVELOPER', dev)]) y = f(y);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, y);
   console.log(`wrote ${out}`);
@@ -115,12 +120,38 @@ if (stack === 'swift') {
 }
 
 if (route === 'free') {
-  console.log(`
-Next (free, no Apple account):
-  1. Commit and push to a PUBLIC GitHub repo (free macOS builds).
-  2. git tag v1.0.0 && git push --tags
-  3. Open the repo's Releases page: app.ipa (sideload), app-simulator.zip (appetize.io), source.json (AltStore/SideStore).
-Full guide: README.md`);
+  const repo = (git('remote get-url origin').match(/github\.com[:/](.+?)(\.git)?$/) ?? [])[1];
+  const version = (read('pubspec.yaml').match(/^version:\s*([\d.]+)/m) ?? [])[1] ?? '1.0.0';
+  const tag = `v${version}`;
+  if (push && !repo) {
+    console.log(`
+No GitHub remote yet. Make a PUBLIC repo at https://github.com/new (free macOS builds), then:
+  git remote add origin https://github.com/YOU/REPO.git
+and run this again.`);
+  } else if (push && git(`tag -l ${tag}`)) {
+    console.log(`Tag ${tag} already exists. Raise "version:" in pubspec.yaml, then run this again.`);
+  } else if (push) {
+    try {
+      const run = (c) => execSync(`git ${c}`, { stdio: 'inherit' });
+      run('add -A');
+      if (git('status --porcelain')) run('commit -q -m "iOS build setup (unmac)"');
+      run('push -q origin HEAD');
+      run(`tag ${tag}`);
+      run(`push -q origin ${tag}`);
+      console.log(`
+Build started. In about 5 minutes your files are here:
+  https://github.com/${repo}/releases/tag/${tag}
+  app.ipa            install with Sideloadly / AltStore / SideStore (free Apple ID, renew every 7 days)
+  app-simulator.zip  open it in a browser at appetize.io, no iPhone needed
+Watch it run: https://github.com/${repo}/actions`);
+    } catch {
+      bail('git push failed. Check you are logged in to GitHub and the repo is yours, then run this again.');
+    }
+  } else {
+    console.log(`
+Next: push to a PUBLIC GitHub repo, then  git tag ${tag} && git push origin ${tag}
+Your files appear on the repo's Releases page in about 5 minutes.`);
+  }
   process.exit(0);
 }
 
