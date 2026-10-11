@@ -4,6 +4,15 @@ param([string]$Xip)
 $ErrorActionPreference = 'Stop'
 function Step($m) { Write-Host "`n== $m" -ForegroundColor Cyan }
 
+Write-Host 'WARNING: this extracts Apple''s iOS SDK and uses it on a non-Apple computer. Apple''s Xcode license (sections 2.5 and 2.7) allows Apple software only on Apple-branded hardware. Not legal advice. Cloud builds (see README) do not have this problem.' -ForegroundColor Yellow
+if ((Read-Host 'Type YES to continue') -ne 'YES') { exit 0 }
+
+Step '0/5 Apple USB drivers'
+if (-not (Get-Service 'Apple Mobile Device Service' -ErrorAction SilentlyContinue)) {
+  Write-Host 'Install iTunes and iCloud from apple.com (NOT the Microsoft Store), then run this script again. No sign-in needed.' -ForegroundColor Yellow
+  exit 1
+}
+
 Step '1/5 Flutter'
 if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
   Write-Host 'Flutter not found. Install it first: https://docs.flutter.dev/get-started/install/windows' -ForegroundColor Yellow

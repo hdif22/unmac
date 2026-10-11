@@ -53,15 +53,18 @@ Works for Expo projects. A bare React Native app with custom native code is hard
 
 Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds pure Swift Package apps there. Projects that need Xcode features (storyboards, asset catalogs, many frameworks) are limited. Plan on cloud builds for anything bigger.
 
-## Develop and run on an iPhone from Windows or Linux (Flutter)
+## Optional: run on your iPhone while developing (Flutter) - read the warning first
 
-Release builds go through the cloud Mac above. For the daily loop (edit, hot reload, debug on a real iPhone) there is `dev-setup`, built on [xcross](https://github.com/arxdeus/xcross).
+> **Warning.** This part extracts Apple's iOS SDK from `Xcode.xip` and uses it on a non-Apple computer. Apple's Xcode license (sections 2.5 and 2.7) says Apple software may only run on Apple-branded hardware and the SDKs may not be used separately. Whether this is enforced against individuals is unclear, and this is not legal advice. The cloud-build route above does not have this problem. Use `dev-setup` only if you accept the risk.
 
-1. Windows: `powershell -ExecutionPolicy Bypass -File dev-setup/windows.ps1`. Linux: `sh dev-setup/linux.sh`.
+Release builds always go through the cloud Mac above. For the daily loop (edit, hot reload, debug on a real iPhone) there is `dev-setup`, built on [xcross](https://github.com/arxdeus/xcross).
+
+1. Windows: `powershell -ExecutionPolicy Bypass -File dev-setup/windows.ps1`. Linux: `sh dev-setup/linux.sh` (untested).
 2. It installs xcross, Swift, LLVM and the Python tools. It stops once to ask you to download `Xcode.xip` from xcodereleases.com (Apple ID, about 3 GB), then extracts the iOS SDK from it. Xcode itself never runs.
-3. Plug in an iPhone with iOS 17 or newer, then in your app: `xcross flutter doctor` and `xcross flutter run`.
+3. Windows also needs Apple's iTunes and iCloud installed from apple.com (not the Microsoft Store) so USB works. The script checks this.
+4. Plug in an iPhone with iOS 17 or newer, then in your app: `xcross flutter doctor` and `xcross flutter run`.
 
-Needs a real iPhone, debug builds only, no CocoaPods-only plugins. Apple's license for Xcode is written for Apple hardware, so read it yourself. No WSL is needed on Windows.
+Needs a real iPhone, debug builds only, no CocoaPods-only plugins. A free Apple ID gives apps that expire after 7 days and allows about 3 apps at a time. No WSL is needed on Windows.
 
 ## Android only
 
