@@ -19,7 +19,7 @@ command -v xcross >/dev/null || curl -fsSL https://raw.githubusercontent.com/arx
 command -v xcross >/dev/null || { echo "Open a NEW terminal so xcross is on PATH, then run this script again."; exit 1; }
 xcross setup
 
-step "4/5 Xcode download (needs your Apple ID, about 3 GB)"
+step "4/5 Xcode download (needs your Apple ID, about 2 GB)"
 XIP="${1:-$(ls "$HOME"/Downloads/Xcode*.xip 2>/dev/null | head -n1)}"
 [ -f "$XIP" ] || { echo "Download Xcode*.xip from https://xcodereleases.com, then run: sh linux.sh /path/to/Xcode.xip"; exit 1; }
 

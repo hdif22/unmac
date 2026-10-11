@@ -32,7 +32,7 @@ if (-not (Get-Command xcross -ErrorAction SilentlyContinue)) {
 Step '3/5 Swift, LLVM, Python tools (xcross asks before each package)'
 xcross setup
 
-Step '4/5 Xcode download (needs your Apple ID, about 3 GB)'
+Step '4/5 Xcode download (needs your Apple ID, about 2 GB)'
 if (-not $Xip) { $Xip = (Get-ChildItem "$env:USERPROFILE\Downloads\Xcode*.xip" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName }
 if (-not $Xip -or -not (Test-Path $Xip)) {
   Write-Host 'Download Xcode*.xip from https://xcodereleases.com (sign in with your Apple ID).' -ForegroundColor Yellow

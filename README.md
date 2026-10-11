@@ -60,7 +60,7 @@ Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds a
 Release builds always go through the cloud Mac above. For the daily loop (edit, hot reload, debug on a real iPhone) there is `dev-setup`, built on [xcross](https://github.com/arxdeus/xcross).
 
 1. Windows: `powershell -ExecutionPolicy Bypass -File dev-setup/windows.ps1`. Linux: `sh dev-setup/linux.sh` (untested).
-2. It installs xcross, Swift, LLVM and the Python tools. It stops once to ask you to download `Xcode.xip` from xcodereleases.com (Apple ID, about 3 GB), then extracts the iOS SDK from it. Xcode itself never runs.
+2. It installs xcross, Swift, LLVM and the Python tools. It stops once to ask you to download `Xcode.xip` from xcodereleases.com (Apple ID, about 2 GB), then extracts the iOS SDK from it. Xcode itself never runs.
 3. Windows also needs Apple's iTunes and iCloud installed from apple.com (not the Microsoft Store) so USB works. The script checks this.
 4. Plug in an iPhone with iOS 17 or newer, then in your app: `xcross flutter doctor` and `xcross flutter run`.
 
