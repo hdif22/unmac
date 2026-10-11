@@ -31,25 +31,25 @@ Apple may ask you to verify your identity in the Apple Developer app on an Apple
 
 ## Flutter
 
-1. Connect your repo at codemagic.io. Teams > Integrations > App Store Connect > add the key. Remember its name.
-2. In your app folder run `dart run path/to/flutter/tool/ios_prep.dart com.yourname.app`. It sets the bundle ID, raises the iOS minimum to 16 and adds permission texts for common plugins. Edit the texts to say why your app needs each one.
-3. Copy `flutter/codemagic.yaml` next to your `pubspec.yaml` and replace the `CHANGE` values.
+1. In your app folder run `node path/to/macless/setup.mjs` (needs Node.js) and pick `flutter`. It sets the bundle ID, raises the iOS minimum to 16, adds permission texts for common plugins and writes `codemagic.yaml`. Edit the texts to say why your app needs each permission.
+2. Connect your repo at codemagic.io. Teams > Integrations > App Store Connect > add the key. Remember its name.
+3. Fill the remaining `CHANGE` values in `codemagic.yaml` (integration name, Apple ID).
 4. `git tag ios-1.0.0 && git push --tags`. Allow 15-25 minutes. The build lands in TestFlight.
 
 ## React Native (Expo)
 
 Works for Expo projects. A bare React Native app with custom native code is harder and is not covered.
 
-1. In your app: `npx eas-cli login`, then `npx eas-cli build:configure`.
-2. Merge `expo/app.json.snippet` into your `app.json` and replace `expo/eas.json` values (`ascAppId`).
+1. In your app folder run `node path/to/macless/setup.mjs` and pick `expo`. It sets the bundle ID and permission texts in `app.json` and adds `eas.json`. If you use `app.config.js`, merge `expo/app.json.snippet` by hand.
+2. Put your numeric Apple ID into `eas.json` (`ascAppId`) and run `npx eas-cli login`.
 3. `npx eas-cli build -p ios --profile production`. EAS asks for your Apple login once and creates the signing for you.
 4. `npx eas-cli submit -p ios --profile production` uploads it to App Store Connect / TestFlight.
 
 ## Swift (native)
 
-1. Connect your repo at codemagic.io and add the API key as in Flutter step 1.
-2. Copy `swift/codemagic.yaml` into your repo root and replace the `CHANGE` values (project or workspace name, scheme).
-3. Push a tag like `ios-1.0.0`.
+1. In the folder with your Xcode project run `node path/to/macless/setup.mjs` and pick `swift`. It finds your project or workspace and writes `codemagic.yaml`. Check the scheme name it guessed.
+2. Set the bundle ID in Xcode (target > Signing & Capabilities). Connect your repo at codemagic.io and add the API key as in Flutter step 2.
+3. Fill the remaining `CHANGE` values, then push a tag like `ios-1.0.0`.
 
 Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds pure Swift Package apps there. Projects that need Xcode features (storyboards, asset catalogs, many frameworks) are limited. Plan on cloud builds for anything bigger.
 
