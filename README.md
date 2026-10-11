@@ -53,6 +53,16 @@ Works for Expo projects. A bare React Native app with custom native code is hard
 
 Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds pure Swift Package apps there. Projects that need Xcode features (storyboards, asset catalogs, many frameworks) are limited. Plan on cloud builds for anything bigger.
 
+## Develop and run on an iPhone from Windows or Linux (Flutter)
+
+Release builds go through the cloud Mac above. For the daily loop (edit, hot reload, debug on a real iPhone) there is `dev-setup`, built on [xcross](https://github.com/arxdeus/xcross).
+
+1. Windows: `powershell -ExecutionPolicy Bypass -File dev-setup/windows.ps1`. Linux: `sh dev-setup/linux.sh`.
+2. It installs xcross, Swift, LLVM and the Python tools. It stops once to ask you to download `Xcode.xip` from xcodereleases.com (Apple ID, about 3 GB), then extracts the iOS SDK from it. Xcode itself never runs.
+3. Plug in an iPhone with iOS 17 or newer, then in your app: `xcross flutter doctor` and `xcross flutter run`.
+
+Needs a real iPhone, debug builds only, no CocoaPods-only plugins. Apple's license for Xcode is written for Apple hardware, so read it yourself. No WSL is needed on Windows.
+
 ## Android only
 
 If your app is Kotlin or Java, there is nothing to build for iOS. You would need a cross-platform route first: Flutter, React Native or Kotlin Multiplatform. This kit covers the first two.
