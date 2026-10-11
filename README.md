@@ -27,7 +27,7 @@ Apple may ask you to verify your identity in the Apple Developer app on an Apple
 
 1. **Enroll** at developer.apple.com/programs/enroll as an individual. Wait for approval.
 2. **Create the app** in App Store Connect (appstoreconnect.apple.com > Apps > +). Pick a bundle ID like `com.yourname.app`. Copy the numeric **Apple ID** (App > General > App Information).
-3. **Create an API key** (Codemagic paths): App Store Connect > Users and Access > Integrations > App Store Connect API > Team Keys > +, role **App Manager**. Download the `.p8` file once. Note the Key ID and Issuer ID.
+3. **Create an API key** (Codemagic paths): App Store Connect > Users and Access > Integrations > App Store Connect API > Team Keys > +, role **App Manager**. Download the `.p8` file once. Note the Key ID and Issuer ID. The first time, the account holder may have to click "Request Access" there.
 
 ## Flutter
 
@@ -51,7 +51,7 @@ Works for Expo projects. A bare React Native app with custom native code is hard
 2. Set the bundle ID in Xcode (target > Signing & Capabilities). Connect your repo at codemagic.io and add the API key as in Flutter step 2.
 3. Fill the remaining `CHANGE` values, then push a tag like `ios-1.0.0`.
 
-Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds pure Swift Package apps there. Projects that need Xcode features (storyboards, asset catalogs, many frameworks) are limited. Plan on cloud builds for anything bigger.
+Writing Swift on Windows or Linux: `xtool` (github.com/xtool-org/xtool) builds apps that are Swift packages (`Package.swift`), not `.xcodeproj` projects. On Windows it runs inside WSL. Like `dev-setup` below, it extracts Apple's SDK from `Xcode.xip`, so the same license warning applies. Release builds still go through the cloud Mac.
 
 ## Optional: run on your iPhone while developing (Flutter) - read the warning first
 

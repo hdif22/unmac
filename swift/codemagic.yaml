@@ -13,7 +13,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.CHANGE.ME
       vars:
-        XCODE_PROJECT: "CHANGE_ME.xcodeproj"   # or use XCODE_WORKSPACE if you use CocoaPods
+        XCODE_PROJECT: "CHANGE_ME.xcodeproj"   # a .xcworkspace goes here too (setup.mjs fills this in)
         XCODE_SCHEME: "CHANGE_ME"
         APP_STORE_APPLE_ID: "CHANGE_ME_NUMERIC_APP_ID"
     triggering:

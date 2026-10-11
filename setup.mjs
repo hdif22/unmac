@@ -39,8 +39,11 @@ if (stack === 'flutter') {
   need('pubspec.yaml', 'Run this inside a Flutter app folder.');
   const pbx = 'ios/Runner.xcodeproj/project.pbxproj', plist = 'ios/Runner/Info.plist';
   need(pbx, 'No ios/ folder. Run: flutter create --platforms=ios .');
-  let p = read(pbx)
-    .replace(/PRODUCT_BUNDLE_IDENTIFIER = [^;]*?(\.RunnerTests)?;/g, (_, t) => `PRODUCT_BUNDLE_IDENTIFIER = ${id}${t ?? ''};`)
+  let p = read(pbx);
+  // Main app ID = the shortest one; tests and extensions start with it and keep their suffix.
+  const old = [...p.matchAll(/PRODUCT_BUNDLE_IDENTIFIER = "?([^;"]+)"?;/g)].map((m) => m[1]).sort((a, b) => a.length - b.length)[0];
+  if (old) p = p.replaceAll(`PRODUCT_BUNDLE_IDENTIFIER = ${old}`, `PRODUCT_BUNDLE_IDENTIFIER = ${id}`);
+  p = p
     .replace(/IPHONEOS_DEPLOYMENT_TARGET = ([\d.]+);/g, (m, v) => (parseFloat(v) < 15.5 ? 'IPHONEOS_DEPLOYMENT_TARGET = 16.0;' : m));
   fs.writeFileSync(pbx, p);
   let s = read(plist), add = '';
@@ -68,7 +71,7 @@ if (stack === 'swift') {
   const ws = entries.find((f) => f.endsWith('.xcworkspace')), pr = entries.find((f) => f.endsWith('.xcodeproj'));
   if (!ws && !pr) bail('No .xcodeproj or .xcworkspace here. Run this in the folder that holds your Xcode project.');
   const proj = ws ?? pr, scheme = proj.replace(/\.(xcworkspace|xcodeproj)$/, '');
-  template('swift/codemagic.yaml', (y) => y.replace('CHANGE_ME.xcodeproj', proj).replace('CHANGE_ME"\n        APP', `${scheme}"\n        APP`)
+  template('swift/codemagic.yaml', (y) => y.replace('CHANGE_ME.xcodeproj', proj).replace('XCODE_SCHEME: "CHANGE_ME"', `XCODE_SCHEME: "${scheme}"`)
     .replace(/XCODE_PROJECT:/, ws ? 'XCODE_WORKSPACE:' : 'XCODE_PROJECT:')
     .replace('--project "$XCODE_PROJECT"', ws ? '--workspace "$XCODE_WORKSPACE"' : '--project "$XCODE_PROJECT"'));
   console.log('Check the scheme name in codemagic.yaml; I guessed:', scheme);
