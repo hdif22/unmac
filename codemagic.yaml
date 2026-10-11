@@ -1,0 +1,41 @@
+# Flutter iOS release from any computer: build on a free cloud Mac, send to TestFlight.
+# Fill the 3 values marked CHANGE, then push a tag like ios-1.0.0.
+workflows:
+  ios-release:
+    name: iOS release
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: CHANGE_ME_INTEGRATION_NAME   # name you gave the API key in Codemagic
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.CHANGE.ME               # same as in Xcode project / App Store Connect
+      vars:
+        APP_STORE_APPLE_ID: "CHANGE_ME_NUMERIC_APP_ID" # App Store Connect > App > General > Apple ID
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "ios-*"
+          include: true
+    scripts:
+      - name: Get packages
+        script: flutter pub get
+      - name: Install pods
+        script: cd ios && pod install
+      - name: Set up signing
+        script: xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --build-number=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1)) \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
