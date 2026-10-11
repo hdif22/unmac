@@ -1,0 +1,90 @@
+# Free iOS release for a Flutter app: no Mac, no iPhone, no $99.
+# Copy to .github/workflows/free-release.yml in your app repo, fill the 4 CHANGE values,
+# then push a tag:  git tag v1.0.0 && git push --tags
+# Free and unlimited on public repos (private repos use your monthly macOS minutes).
+#
+# The GitHub Release gets:
+#   app.ipa            unsigned release build. Install with Sideloadly, AltStore or SideStore,
+#                      which sign it with the user's own free Apple ID (re-sign every 7 days).
+#   app-simulator.zip  debug build for the iOS Simulator. Upload to appetize.io to try the app
+#                      in a browser, no iPhone needed. (Flutter runs only debug on the simulator.)
+#   source.json        AltStore / SideStore source. Users add this URL once:
+#                      https://github.com/OWNER/REPO/releases/latest/download/source.json
+name: iOS free release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: "CHANGE_ME App name"
+  BUNDLE_ID: "com.CHANGE.ME"
+  DEVELOPER: "CHANGE_ME Your name"
+  ICON_URL: "https://raw.githubusercontent.com/CHANGE_ME/CHANGE_ME/main/icon.png"
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Release build (unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package app.ipa
+        run: |
+          mkdir -p out/Payload
+          cp -R build/ios/iphoneos/Runner.app out/Payload/
+          (cd out && zip -qry "$GITHUB_WORKSPACE/app.ipa" Payload)
+
+      - name: Simulator build for Appetize (debug)
+        continue-on-error: true   # some plugins have no simulator support; the release still ships
+        run: |
+          flutter build ios --simulator --debug
+          (cd build/ios/iphonesimulator && zip -qry "$GITHUB_WORKSPACE/app-simulator.zip" Runner.app)
+
+      - name: AltStore / SideStore source
+        run: |
+          python3 - <<'EOF'
+          import datetime, json, os
+          tag = os.environ["GITHUB_REF_NAME"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+          source = {
+              "name": os.environ["APP_NAME"],
+              "nsfw": False,
+              "apps": [{
+                  "name": os.environ["APP_NAME"],
+                  "bundleIdentifier": os.environ["BUNDLE_ID"],
+                  "developerName": os.environ["DEVELOPER"],
+                  "localizedDescription": os.environ["APP_NAME"],
+                  "iconURL": os.environ["ICON_URL"],
+                  "versions": [{
+                      "version": tag.lstrip("v"),
+                      "buildVersion": os.environ["GITHUB_RUN_NUMBER"],
+                      "date": datetime.date.today().isoformat(),
+                      "downloadURL": f"https://github.com/{repo}/releases/download/{tag}/app.ipa",
+                      "size": os.path.getsize("app.ipa"),
+                  }],
+                  "appPermissions": {"entitlements": [], "privacy": {}},
+              }],
+          }
+          json.dump(source, open("source.json", "w"), indent=2)
+          EOF
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app.ipa
+            app-simulator.zip
+            source.json
+          fail_on_unmatched_files: false

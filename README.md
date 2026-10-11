@@ -1,6 +1,6 @@
 # macless
 
-Ship iOS apps without a Mac. Build and publish an iPhone app from Windows or Linux. The iOS build runs on a cloud Mac that you do not own or pay for.
+Ship iOS apps without a Mac. Build an iPhone app from Windows or Linux on a cloud Mac you do not own or pay for. Make a release for free, or publish to the App Store with Apple's $99 account.
 
 ## Pick your stack
 
@@ -12,6 +12,22 @@ Ship iOS apps without a Mac. Build and publish an iPhone app from Windows or Lin
 | Android only (Kotlin/Java) | none | [Android only](#android-only) |
 
 Check current limits before you rely on them: codemagic.io/pricing and expo.dev/pricing.
+
+## Free release, no $99 (Flutter)
+
+No Apple Developer account, no Mac, no iPhone. GitHub's free macOS runners build it.
+
+1. Copy `flutter/free-release.yml` to `.github/workflows/` in your app repo (public repos build for free). Fill the 4 `CHANGE` values.
+2. `git tag v1.0.0 && git push --tags`. The GitHub Release gets three files:
+   - `app.ipa`: unsigned release build.
+   - `app-simulator.zip`: debug build for the iOS Simulator.
+   - `source.json`: an AltStore / SideStore source.
+3. **See it without an iPhone:** upload `app-simulator.zip` to appetize.io and it runs in the browser. The free plan is small (third-party lists say about 30 minutes a month), and Flutter runs only debug mode on the simulator.
+4. **Install it on an iPhone:** users install `app.ipa` with Sideloadly, AltStore or SideStore. These sign it with their own free Apple ID. A free Apple ID's apps expire after 7 days and must be refreshed. Or users add `https://github.com/OWNER/REPO/releases/latest/download/source.json` as a source in AltStore / SideStore to get updates.
+
+Not possible without the $99: the App Store, TestFlight, and apps that never expire.
+
+## Paid route: App Store and TestFlight
 
 ## What you still need (every stack)
 
