@@ -4,7 +4,7 @@ Build iPhone apps without a Mac. No Mac, no iPhone, $0. A free cloud Mac builds 
 
 ## Quick start (Flutter, free)
 
-Your Flutter app must be in a **public** GitHub repo. Then, in the app folder:
+Your Flutter app must be in a GitHub repo, public or private. Public repos build free without limit. Private repos get about 200 free Mac minutes a month, roughly 40 builds (check GitHub's billing page for current numbers). Then, in the app folder:
 
 ```
 npx github:hdif22/unmac

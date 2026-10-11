@@ -125,7 +125,7 @@ if (route === 'free') {
   const tag = `v${version}`;
   if (push && !repo) {
     console.log(`
-No GitHub remote yet. Make a PUBLIC repo at https://github.com/new (free macOS builds), then:
+No GitHub remote yet. Make a repo at https://github.com/new (public = unlimited free builds, private = about 40 free builds a month), then:
   git remote add origin https://github.com/YOU/REPO.git
 and run this again.`);
   } else if (push && git(`tag -l ${tag}`)) {
@@ -149,7 +149,7 @@ Watch it run: https://github.com/${repo}/actions`);
     }
   } else {
     console.log(`
-Next: push to a PUBLIC GitHub repo, then  git tag ${tag} && git push origin ${tag}
+Next: push to GitHub (public or private), then  git tag ${tag} && git push origin ${tag}
 Your files appear on the repo's Releases page in about 5 minutes.`);
   }
   process.exit(0);
