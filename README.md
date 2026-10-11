@@ -1,6 +1,6 @@
-# iOS without a Mac
+# MacLys
 
-Ship an iPhone app to the App Store from Windows or Linux. The iOS build runs on a cloud Mac that you do not own or pay for.
+Ship iOS apps without a Mac. Build and publish an iPhone app from Windows or Linux. The iOS build runs on a cloud Mac that you do not own or pay for.
 
 ## Pick your stack
 
