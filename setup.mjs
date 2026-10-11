@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// macless setup: run inside YOUR app folder.  node path/to/macless/setup.mjs
+// unmac setup: run inside YOUR app folder.  node path/to/unmac/setup.mjs
 // Optional: --stack flutter|expo|swift --bundle-id com.you.app --route free|store --app-name X --developer Y
 import fs from 'node:fs';
 import path from 'node:path';

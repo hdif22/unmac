@@ -1,5 +1,5 @@
 #!/bin/sh
-# macless dev-setup (Linux): everything to run a Flutter app on a real iPhone, no Mac.
+# unmac dev-setup (Linux): everything to run a Flutter app on a real iPhone, no Mac.
 # Usage: sh linux.sh [/path/to/Xcode.xip]
 set -e
 step() { printf '\n== %s\n' "$1"; }

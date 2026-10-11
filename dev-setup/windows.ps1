@@ -1,4 +1,4 @@
-# macless dev-setup (Windows): everything to run a Flutter app on a real iPhone, no Mac.
+# unmac dev-setup (Windows): everything to run a Flutter app on a real iPhone, no Mac.
 # Usage:  powershell -ExecutionPolicy Bypass -File windows.ps1 [-Xip C:\path\Xcode.xip]
 param([string]$Xip)
 $ErrorActionPreference = 'Stop'
