@@ -1,0 +1,38 @@
+# Native Swift / Xcode project built on a free cloud Mac and sent to TestFlight.
+# Fill the CHANGE values, then push a tag like ios-1.0.0.
+workflows:
+  ios-release:
+    name: iOS release (native)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: CHANGE_ME_INTEGRATION_NAME
+    environment:
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.CHANGE.ME
+      vars:
+        XCODE_PROJECT: "CHANGE_ME.xcodeproj"   # or use XCODE_WORKSPACE if you use CocoaPods
+        XCODE_SCHEME: "CHANGE_ME"
+        APP_STORE_APPLE_ID: "CHANGE_ME_NUMERIC_APP_ID"
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "ios-*"
+          include: true
+    scripts:
+      - name: Set up signing
+        script: xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS'"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
