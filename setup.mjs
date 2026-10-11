@@ -5,19 +5,38 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const arg = (n) => { const i = process.argv.indexOf('--' + n); return i > 0 ? process.argv[i + 1] : undefined; };
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const ask = async (q, v) => v ?? (await rl.question(q)).trim();
+const lines = rl[Symbol.asyncIterator]();
+const ask = async (q, v) => {
+  if (v !== undefined) return v;
+  process.stdout.write(q);
+  return ((await lines.next()).value ?? '').trim();
+};
 const read = (p) => fs.readFileSync(p, 'utf8');
 const exists = (p) => fs.existsSync(p);
 
+const git = (c) => { try { return execSync(`git ${c}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return ''; } };
+
 const stack = (await ask('Stack (flutter / expo / swift): ', arg('stack'))).toLowerCase();
-const id = await ask('Bundle ID, like com.yourname.app: ', arg('bundle-id'));
-rl.close();
 if (!['flutter', 'expo', 'swift'].includes(stack)) bail('Stack must be flutter, expo or swift.');
+const id = await ask('Bundle ID, like com.yourname.app: ', arg('bundle-id'));
 if (!/^[A-Za-z][\w-]*(\.[A-Za-z][\w-]*)+$/.test(id)) bail('Bundle ID must look like com.yourname.app');
+// Flutter only: free release on GitHub (no $99) or App Store / TestFlight via Codemagic ($99).
+const route = stack !== 'flutter' ? 'store'
+  : ((await ask('Release: free (GitHub, no $99) or store (App Store, $99) [free]: ', arg('route'))) || 'free').toLowerCase();
+if (!['free', 'store'].includes(route)) bail('Release must be free or store.');
+let appName, dev;
+if (route === 'free') {
+  const pub = exists('pubspec.yaml') ? (read('pubspec.yaml').match(/^name:\s*(\S+)/m) ?? [])[1] : '';
+  appName = (await ask(`App name [${pub}]: `, arg('app-name'))) || pub;
+  const me = git('config user.name');
+  dev = (await ask(`Your name [${me}]: `, arg('developer'))) || me;
+}
+rl.close();
 
 const PERMS = {
   NSCameraUsageDescription: ['camera|cunning_document_scanner|mobile_scanner|expo-camera', 'Why your app needs the camera.'],
@@ -51,7 +70,24 @@ if (stack === 'flutter') {
     if (!s.includes(key)) { add += `\t<key>${key}</key>\n\t<string>${text}</string>\n`; console.log(`added ${key} (edit the text)`); }
   if (add) { const i = s.lastIndexOf('</dict>'); fs.writeFileSync(plist, s.slice(0, i) + add + s.slice(i)); }
   console.log(`bundle ID set to ${id}, iOS minimum 16.0`);
-  template('flutter/codemagic.yaml');
+  if (route === 'store') template('flutter/codemagic.yaml');
+  else freeRelease();
+}
+
+function freeRelease() {
+  const out = '.github/workflows/free-release.yml';
+  if (exists(out)) return console.log(`kept your existing ${out}`);
+  // owner/repo from the GitHub remote, for the icon link
+  const repo = (git('remote get-url origin').match(/github\.com[:/](.+?)(\.git)?$/) ?? [])[1];
+  const icon = 'ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png';
+  const iconUrl = repo && exists(icon) ? `https://raw.githubusercontent.com/${repo}/HEAD/${icon}` : '';
+  const fill = (k, v) => (y) => (v ? y.replace(new RegExp(`(${k}: )".*"`), `$1${JSON.stringify(v)}`) : y);
+  let y = read(path.join(here, 'flutter/free-release.yml'));
+  for (const f of [fill('APP_NAME', appName), fill('BUNDLE_ID', id), fill('DEVELOPER', dev), fill('ICON_URL', iconUrl)]) y = f(y);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, y);
+  console.log(`wrote ${out}`);
+  if (y.includes('CHANGE_ME')) console.log('Fill the CHANGE_ME values left in it (no GitHub remote or app icon found).');
 }
 
 if (stack === 'expo') {
@@ -76,6 +112,16 @@ if (stack === 'swift') {
     .replace('--project "$XCODE_PROJECT"', ws ? '--workspace "$XCODE_WORKSPACE"' : '--project "$XCODE_PROJECT"'));
   console.log('Check the scheme name in codemagic.yaml; I guessed:', scheme);
   console.log('Set the bundle ID to', id, 'in Xcode (target > Signing & Capabilities).');
+}
+
+if (route === 'free') {
+  console.log(`
+Next (free, no Apple account):
+  1. Commit and push to a PUBLIC GitHub repo (free macOS builds).
+  2. git tag v1.0.0 && git push --tags
+  3. Open the repo's Releases page: app.ipa (sideload), app-simulator.zip (appetize.io), source.json (AltStore/SideStore).
+Full guide: README.md`);
+  process.exit(0);
 }
 
 console.log(`

@@ -17,7 +17,7 @@ Check current limits before you rely on them: codemagic.io/pricing and expo.dev/
 
 No Apple Developer account, no Mac, no iPhone. GitHub's free macOS runners build it.
 
-1. Copy `flutter/free-release.yml` to `.github/workflows/` in your app repo (public repos build for free). Fill the 4 `CHANGE` values.
+1. In your app folder run `node path/to/macless/setup.mjs` (needs Node.js). Pick `flutter`, then `free`. It fixes the iOS settings and writes `.github/workflows/free-release.yml` with your app name, bundle ID, name and icon filled in. Push the app to a **public** GitHub repo (free macOS builds).
 2. `git tag v1.0.0 && git push --tags`. The GitHub Release gets three files:
    - `app.ipa`: unsigned release build.
    - `app-simulator.zip`: debug build for the iOS Simulator.
